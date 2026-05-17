@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Town Chase - Multiplayer Racing Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Menu Screens */
+    #menu, #raceMenu, #lobbyMenu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    #menu.hidden, #raceMenu.hidden, #lobbyMenu.hidden {
+      display: none;
+    }
+
+    .menu-content {
+      text-align: center;
+      color: white;
+    }
+
+    .menu-content h1 {
+      font-size: 4em;
+      margin-bottom: 30px;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    .menu-content p {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+
+    input[type="text"] {
+      padding: 15px;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      width: 300px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      text-align: center;
+    }
+
+    input[type="text"]::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    button {
+      padding: 15px 40px;
+      font-size: 1.1em;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    /* Race Menu */
+    .race-types {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .race-type-btn {
+      padding: 20px 30px;
+      font-size: 1.3em;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid #667eea;
+    }
+
+    .race-type-btn:hover {
+      background: rgba(102, 126, 234, 0.3);
+    }
+
+    /* Lobby Menu */
+    .lobby-container {
+      width: 90%;
+      max-width: 800px;
+    }
+
+    #availableRaces {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .race-item {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      color: white;
+      text-align: center;
+      border: 2px solid #667eea;
+    }
+
+    .race-item button {
+      width: 100%;
+    }
+
+    /* Game Screen */
+    #gameScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      z-index: 50;
+    }
+
+    #gameScreen.hidden {
+      display: none;
+    }
+
+    .game-container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .game-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #gameCanvas {
+      flex: 1;
+      background: rgba(135, 206, 235, 0.1);
+      border: 3px solid #667eea;
+      cursor: crosshair;
+    }
+
+    .game-info {
+      display: flex;
+      gap: 20px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      font-size: 1.1em;
+      border-top: 2px solid #667eea;
+    }
+
+    .sidebar {
+      width: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .panel {
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      padding: 15px;
+      color: white;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .panel h3 {
+      margin-bottom: 10px;
+      color: #667eea;
+      font-size: 0.9em;
+      text-transform: uppercase;
+    }
+
+    .player-item {
+      padding: 8px;
+      background: rgba(102, 126, 234, 0.2);
+      margin-bottom: 5px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      border-left: 3px solid #667eea;
+    }
+
+    .player-item.finished {
+      border-left-color: #4caf50;
+      background: rgba(76, 175, 80, 0.2);
+    }
+
+    #chatBox {
+      height: 200px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 0.85em;
+    }
+
+    .chat-message {
+      margin-bottom: 5px;
+      padding: 5px;
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 4px;
+      word-break: break-word;
+    }
+
+    .chat-message strong {
+      color: #667eea;
+    }
+
+    #chatInput {
+      width: 100%;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid #667eea;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+
+    #chatInput::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 150px;
+      }
+
+      .menu-content h1 {
+        font-size: 2em;
+      }
+
+      input[type="text"] {
+        width: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Menu -->
+  <div id="menu">
+    <div class="menu-content">
+      <h1>🏎️ TOWN CHASE</h1>
+      <p>Multiplayer Racing Game</p>
+      <input type="text" id="playerName" placeholder="Enter your name...">
+      <br>
+      <button onclick="startGame()">START GAME</button>
+    </div>
+  </div>
+
+  <!-- Race Type Selection -->
+  <div id="raceMenu" class="hidden">
+    <div class="menu-content">
+      <h1>Choose Race Type</h1>
+      <div class="race-types">
+        <button class="race-type-btn" onclick="selectRaceType('firstToFinish')">🏁 First to Finish</button>
+        <button class="race-type-btn" onclick="selectRaceType('laps')">🔄 Lap Race</button>
+        <button class="race-type-btn" onclick="selectRaceType('timeLimit')">⏱️ Time Trial</button>
+      </div>
+      <br>
+      <button onclick="backToMenu()">BACK</button>
+    </div>
+  </div>
+
+  <!-- Lobby -->
+  <div id="lobbyMenu" class="hidden">
+    <div class="menu-content lobby-container">
+      <h1>Available Races</h1>
+      <div id="availableRaces"></div>
+      <button onclick="createNewRace()">+ CREATE NEW RACE</button>
+      <button onclick="backToMenu()">BACK</button>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="gameScreen" class="hidden">
+    <div class="game-container">
+      <div class="game-area">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div class="game-info">
+          <div id="speedometer">Speed: 0</div>
+          <div id="lapCounter">Lap: 1/1</div>
+          <div id="timerDisplay">Time: 0:00</div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="panel">
+          <h3>Players</h3>
+          <div id="playersList"></div>
+        </div>
+
+        <div class="panel" style="flex: 2;">
+          <h3>Chat</h3>
+          <div id="chatBox"></div>
+          <input type="text" id="chatInput" placeholder="Type a message... (Enter to send)">
+        </div>
+
+        <button onclick="backToMenu()" style="width: 100%;">QUIT RACE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.io library -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <!-- Game script -->
+  <script src="game.js"></script>
+</body>
+</html>
