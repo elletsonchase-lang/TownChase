@@ -1,7 +1,7 @@
 {
-  "name": "town-chase",
+  "name": "chatroom",
   "version": "1.0.0",
-  "description": "A multiplayer 2D racing game with chat",
+  "description": "A simple multiplayer chatroom",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,8 +9,7 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.5.4",
-    "uuid": "^9.0.0"
+    "socket.io": "^4.5.4"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
